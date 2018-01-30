@@ -1,0 +1,4 @@
+apiVersion: v1
+description: A Helm chart for deploying express-gateway to Kubernetes
+name: express-gateway
+version: 0.1.0

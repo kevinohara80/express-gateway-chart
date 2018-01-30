@@ -1,0 +1,45 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{ template "express-gateway.fullname" . }}
+  labels:
+    app: {{ template "express-gateway.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ template "express-gateway.name" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "express-gateway.name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      volumes:
+        - name: config
+          configMap:
+            name: {{ template "express-gateway.name" . }}-config
+      containers:
+        - name: express-gateway
+          image: expressgateway/express-gateway:{{ .Values.image.tag }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: EG_CONFIG_DIR
+              value: '/usr/src/app/config'
+            - name: LOG_LEVEL
+              value: debug
+          ports:
+            - name: gateway
+              containerPort: 8080
+            - name: admin
+              containerPort: 9876
+          volumeMounts:
+            - name: config
+              mountPath: '/usr/src/app/config/system.config.yml'
+              subPath: 'system.config.yml'
+            - name: config
+              mountPath: '/usr/src/app/config/gateway.config.yml'
+              subPath: 'gateway.config.yml'
